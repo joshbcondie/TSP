@@ -17,7 +17,7 @@ namespace TSP
             /// you are, of course, free to use a different representation if it would be more convenient or efficient 
             /// for your node data structure and search algorithm. 
             /// </summary>
-            public ArrayList 
+            public ArrayList
                 Route;
 
             public TSPSolution(ArrayList iroute)
@@ -35,10 +35,10 @@ namespace TSP
             {
                 // go through each edge in the route and add up the cost. 
                 int x;
-                City here; 
+                City here;
                 double cost = 0D;
-                
-                for (x = 0; x < Route.Count-1; x++)
+
+                for (x = 0; x < Route.Count - 1; x++)
                 {
                     here = Route[x] as City;
                     cost += here.costToGetTo(Route[x + 1] as City);
@@ -46,13 +46,13 @@ namespace TSP
                 // go from the last city to the first. 
                 here = Route[Route.Count - 1] as City;
                 cost += here.costToGetTo(Route[0] as City);
-                return cost; 
+                return cost;
             }
         }
 
         #region private members
         private const int DEFAULT_SIZE = 25;
-        
+
         private const int CITY_ICON_SIZE = 5;
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace TSP
         /// <summary>
         /// best solution so far. 
         /// </summary>
-        private TSPSolution bssf; 
+        private TSPSolution bssf;
 
         /// <summary>
         /// how to color various things. 
@@ -132,14 +132,14 @@ namespace TSP
         {
             Cities = new City[_size];
             Route = new ArrayList(_size);
-            bssf = null; 
+            bssf = null;
 
             for (int i = 0; i < _size; i++)
                 Cities[i] = new City(rnd.NextDouble(), rnd.NextDouble());
 
             cityBrushStyle = new SolidBrush(Color.Black);
             cityBrushStartStyle = new SolidBrush(Color.Red);
-            routePenStyle = new Pen(Color.LightGray,1);
+            routePenStyle = new Pen(Color.LightGray, 1);
             routePenStyle.DashStyle = System.Drawing.Drawing2D.DashStyle.Solid;
         }
 
@@ -165,7 +165,7 @@ namespace TSP
         public void GenerateProblem(int size)
         {
             this._size = size;
-            resetData(); 
+            resetData();
         }
 
         /// <summary>
@@ -186,11 +186,11 @@ namespace TSP
         /// <param name="g">where to draw the stuff</param>
         public void Draw(Graphics g)
         {
-            float width  = g.VisibleClipBounds.Width-45F;
-            float height = g.VisibleClipBounds.Height-15F;
+            float width = g.VisibleClipBounds.Width - 45F;
+            float height = g.VisibleClipBounds.Height - 15F;
             Font labelFont = new Font("Arial", 10);
 
-            g.DrawString("n(c) means this node is the nth node in the current solution and incurs cost c to travel to the next node.", labelFont, cityBrushStartStyle, new PointF(0F, 0F)); 
+            g.DrawString("n(c) means this node is the nth node in the current solution and incurs cost c to travel to the next node.", labelFont, cityBrushStartStyle, new PointF(0F, 0F));
 
             // Draw lines
             if (bssf != null)
@@ -200,10 +200,10 @@ namespace TSP
                 int index = 0;
                 foreach (City c in bssf.Route)
                 {
-                    if (index < bssf.Route.Count -1)
-                        g.DrawString(" " + index +"("+c.costToGetTo(bssf.Route[index+1]as City)+")", labelFont, cityBrushStartStyle, new PointF((float)c.X * width + 3F, (float)c.Y * height));
-                    else 
-                        g.DrawString(" " + index +"("+c.costToGetTo(bssf.Route[0]as City)+")", labelFont, cityBrushStartStyle, new PointF((float)c.X * width + 3F, (float)c.Y * height));
+                    if (index < bssf.Route.Count - 1)
+                        g.DrawString(" " + index + "(" + c.costToGetTo(bssf.Route[index + 1] as City) + ")", labelFont, cityBrushStartStyle, new PointF((float)c.X * width + 3F, (float)c.Y * height));
+                    else
+                        g.DrawString(" " + index + "(" + c.costToGetTo(bssf.Route[0] as City) + ")", labelFont, cityBrushStartStyle, new PointF((float)c.X * width + 3F, (float)c.Y * height));
                     ps[index++] = new Point((int)(c.X * width) + CITY_ICON_SIZE / 2, (int)(c.Y * height) + CITY_ICON_SIZE / 2);
                 }
 
@@ -229,12 +229,12 @@ namespace TSP
         ///  return the cost of the best solution so far. 
         /// </summary>
         /// <returns></returns>
-        public double costOfBssf ()
+        public double costOfBssf()
         {
             if (bssf != null)
                 return (bssf.costOfRoute());
             else
-                return -1D; 
+                return -1D;
         }
 
         /// <summary>
@@ -243,7 +243,14 @@ namespace TSP
         /// </summary>
         public void solveProblem()
         {
-            int x;
+            State state = new State(Cities);
+            state.reduceMatrix();
+            bssf = new TSPSolution(state.findBSSF().Route);
+
+            // Trivial solution, what appeared here originally
+            // Uncomment to see how it works
+
+            /*int x;
             Route = new ArrayList(); 
             // this is the trivial solution. 
             for (x = 0; x < Cities.Length; x++)
@@ -255,7 +262,7 @@ namespace TSP
             // update the cost of the tour. 
             Program.MainForm.tbCostOfTour.Text = " " + bssf.costOfRoute();
             // do a refresh. 
-            Program.MainForm.Invalidate();
+            Program.MainForm.Invalidate();*/
         }
         #endregion
     }
