@@ -8,7 +8,28 @@ namespace TSP
 {
     class State
     {
-        public static State currentState;
+        private static State currentState;
+        private static int cityCount;
+        public static State BSSF;
+
+
+        // Returns bound (only after reducing matrix)
+        public double Bound
+        {
+            get { return bound; }
+        }
+
+        // Returns current route
+        public ArrayList Route
+        {
+            get { return route; }
+        }
+
+        // Gets priority (lower is better)
+        public double Priority
+        {
+            get { return bound; }
+        }
 
         private double[,] matrix;
         private ArrayList route;
@@ -17,9 +38,10 @@ namespace TSP
         private State parent;
         private double bound;
         private int depth;
-        private int cityCount;
+        // To be used to avoid premature cycles
+        private HashSet<int> usedVertices;
 
-        // Initial state
+        // Initial state, reduces matrix
         public State(City[] cities)
         {
             cityCount = cities.Length;
@@ -39,6 +61,7 @@ namespace TSP
             }
             bound = 0;
             route = new ArrayList();
+            usedVertices = new HashSet<int>();
 
             currentState = this;
 
@@ -46,11 +69,32 @@ namespace TSP
         }
 
         // Copy constructor for making children (Josh)
-        public State(State state)
+        // Reduces matrix based on whether edge is included
+        public State(State parent, Boolean include, int from, int to)
         {
-            matrix = (double[,])state.matrix.Clone();
-            route = new ArrayList(state.route);
-            bound = state.bound;
+            matrix = (double[,])parent.matrix.Clone();
+            route = new ArrayList(parent.route);
+            usedVertices = parent.usedVertices;
+            bound = parent.bound;
+            this.parent = parent;
+            depth = parent.depth + 1;
+
+            if (include)
+            {
+                bound += matrix[from, to];
+
+                for (int i = 0; i < cityCount; i++)
+                {
+                    matrix[from, i] = -1;
+                    matrix[i, to] = -1;
+                }
+            }
+            else
+            {
+                matrix[from, to] = -1;
+            }
+
+            reduceMatrix();
         }
 
         // Expands this state, prunes, and finds next state to expand (Probably both of us)
@@ -58,14 +102,6 @@ namespace TSP
         public void Expand()
         {
 
-        }
-
-        // Finds initial BSSF (Brian)
-        // Call after setting cost matrix
-        public State findBSSF()
-        {
-            // TODO: fill this in
-            return this;
         }
 
         // Reduces cost matrix and updates bound (Josh)
@@ -118,24 +154,6 @@ namespace TSP
                     bound += min;
                 }
             }
-        }
-
-        // Returns bound (only after reducing matrix)
-        public double Bound
-        {
-            get { return bound; }
-        }
-
-        // Returns current route
-        public ArrayList Route
-        {
-            get { return route; }
-        }
-
-        // Gets priority (lower is better)
-        public double Priority
-        {
-            get { return bound; }
         }
 
         // Recursively prune this branch (Brian)
