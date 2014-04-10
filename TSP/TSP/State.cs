@@ -16,10 +16,13 @@ namespace TSP
         private State excludeChild;
         private State parent;
         private double bound;
+        private int depth;
+        private int cityCount;
 
         // Initial state
         public State(City[] cities)
         {
+            cityCount = cities.Length;
             matrix = new double[cities.Length, cities.Length];
             for (int i = 0; i < cities.Length; i++)
             {
@@ -34,15 +37,20 @@ namespace TSP
                     }
                 }
             }
+            bound = 0;
             route = new ArrayList();
 
             currentState = this;
+
+            reduceMatrix();
         }
 
         // Copy constructor for making children (Josh)
         public State(State state)
         {
-
+            matrix = (double[,])state.matrix.Clone();
+            route = new ArrayList(state.route);
+            bound = state.bound;
         }
 
         // Expands this state, prunes, and finds next state to expand (Probably both of us)
@@ -64,6 +72,52 @@ namespace TSP
         public void reduceMatrix()
         {
 
+            // Reduce rows
+            // Checks for rows of infinity (negatives)
+            for (int i = 0; i < cityCount; i++)
+            {
+                double min = -1;
+
+                for (int j = 0; j < cityCount; j++)
+                {
+                    if (min < 0 || (matrix[i, j] < min && matrix[i, j] >= 0))
+                    {
+                        min = matrix[i, j];
+                    }
+                }
+
+                if (min > 0)
+                {
+                    for (int j = 0; j < cityCount; j++)
+                    {
+                        matrix[i, j] -= min;
+                    }
+                    bound += min;
+                }
+            }
+
+            // Reduce columns
+            for (int i = 0; i < cityCount; i++)
+            {
+                double min = -1;
+
+                for (int j = 0; j < cityCount; j++)
+                {
+                    if (min < 0 || (matrix[j, i] < min && matrix[j, i] >= 0))
+                    {
+                        min = matrix[j, i];
+                    }
+                }
+
+                if (min > 0)
+                {
+                    for (int j = 0; j < cityCount; j++)
+                    {
+                        matrix[j, i] -= min;
+                    }
+                    bound += min;
+                }
+            }
         }
 
         // Returns bound (only after reducing matrix)

@@ -245,7 +245,7 @@ namespace TSP
         {
             State state = new State(Cities);
             state.reduceMatrix();
-            bssf = new TSPSolution(state.findBSSF().Route);
+            //bssf = new TSPSolution(state.findBSSF().Route);
 
             // Trivial solution, what appeared here originally
             // Uncomment to see how it works

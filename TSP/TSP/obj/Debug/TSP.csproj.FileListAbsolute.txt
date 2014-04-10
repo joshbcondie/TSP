@@ -16,3 +16,11 @@ C:\Users\Joshua\Desktop\CS 312\TSP\TSP\obj\Debug\TSP.csprojResolveAssemblyRefere
 C:\Users\Joshua\Desktop\CS 312\TSP\TSP\obj\Debug\TSP.Form1.resources
 C:\Users\Joshua\Desktop\CS 312\TSP\TSP\obj\Debug\TSP.Properties.Resources.resources
 C:\Users\Joshua\Desktop\CS 312\TSP\TSP\obj\Debug\TSP.csproj.GenerateResource.Cache
+C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\obj\Debug\TSP.exe
+C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\obj\Debug\TSP.pdb
+C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\bin\Debug\TSP.exe
+C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\bin\Debug\TSP.pdb
+C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\obj\Debug\TSP.csprojResolveAssemblyReference.cache
+C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\obj\Debug\TSP.Form1.resources
+C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\obj\Debug\TSP.Properties.Resources.resources
+C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\obj\Debug\TSP.csproj.GenerateResource.Cache

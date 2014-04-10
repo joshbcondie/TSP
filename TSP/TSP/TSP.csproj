@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="City.cs" />
+    <Compile Include="State.cs" />
     <Compile Include="ProblemAndSolver.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
