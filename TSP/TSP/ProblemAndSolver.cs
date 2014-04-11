@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
+using System.Diagnostics;
 
 namespace TSP
 {
@@ -244,6 +245,13 @@ namespace TSP
         public void solveProblem()
         {
             State state = new State(Cities);
+            bssf = new TSPSolution(State.BSSF.Route);
+            Console.WriteLine(bssf.costOfRoute());
+            Console.WriteLine(State.BSSF.Bound);
+            Debug.Assert(bssf.costOfRoute() == State.BSSF.Bound);
+            Program.MainForm.tbCostOfTour.Text = " " + bssf.costOfRoute();
+            Program.MainForm.tbElapsedTime.Text = State.Watch.Elapsed.ToString();
+            Program.MainForm.Invalidate();
 
             // Trivial solution, what appeared here originally
             // Uncomment to see how it works

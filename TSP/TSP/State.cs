@@ -4,16 +4,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Priority_Queue;
+using System.Diagnostics;
 
 namespace TSP
 {
-    class State
+    class State : PriorityQueueNode
     {
-        private static HeapPriorityQueue<State> queue;
+        private static HeapPriorityQueue<State> queue = new HeapPriorityQueue<State>(2000000);
         // Top state, used to start recursive pruning
         private static State root;
         private static int cityCount;
         public static State BSSF;
+        public static Stopwatch Watch = new Stopwatch();
 
 
         // Returns bound (only after reducing matrix)
@@ -32,7 +34,7 @@ namespace TSP
         // We'll have to experiment to see what's most effective.
         public double Priority
         {
-            get { return bound / (depth + 1); }
+            get { return bound / (cityCount - pathsLeft + 1); }
         }
 
         private double[,] matrix;
@@ -49,6 +51,7 @@ namespace TSP
         // Initial state, reduces matrix
         public State(City[] cities)
         {
+            Watch.Start();
             cityCount = cities.Length;
             matrix = new double[cities.Length, cities.Length];
             for (int i = 0; i < cities.Length; i++)
@@ -69,14 +72,17 @@ namespace TSP
             usedVertices = new HashSet<int>();
 
             root = this;
-            queue.Enqueue(this, Priority);
             pathsLeft = cityCount;
 
             reduceMatrix();
+
+            // Start expanding until agenda is empty, time is up, or BSSF cost is equal to original LB.
+            Expand();
         }
 
         // Copy constructor for making children (Josh)
         // Reduces matrix based on whether edge is included
+        // Adds state to queue
         public State(State parent, Boolean include, int from, int to)
         {
             matrix = (double[,])parent.matrix.Clone();
@@ -151,19 +157,31 @@ namespace TSP
         // Make sure to prevent creating a cycle prematurely
         public void Expand()
         {
-            // If state is a solution return
-            if (pathsLeft == 0)
+            // Check timeout
+            if (Watch.Elapsed.Seconds >= 59)
             {
+                Watch.Stop();
                 return;
             }
 
             // Create two children and update usedVertices (Brian)
+            if (pathsLeft > 0)
+            {
+
+            }
 
             // Find best state on queue and expand
+            State best = queue.Dequeue();
+            if (best == null || best.bound >= BSSF.bound || BSSF.bound == root.bound)
+                return;
         }
 
         // Finds initial BSSF (Brian)
         // Call after setting cost matrix
+        // Use vertices to the right (or left) of the diagonal
+        // Cost matrix of initial BSSF, doesn't matter
+        // Only the route and bound matter
+        // So don't worry about the rest of the fields
         public State findBSSF()
         {
             // TODO: fill this in
