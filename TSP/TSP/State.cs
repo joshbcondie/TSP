@@ -3,12 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Priority_Queue;
 
 namespace TSP
 {
     class State
     {
-        private static State currentState;
+        private static HeapPriorityQueue<State> queue;
+        // Top state, used to start recursive pruning
+        private static State root;
         private static int cityCount;
         public static State BSSF;
 
@@ -26,9 +29,10 @@ namespace TSP
         }
 
         // Gets priority (lower is better)
+        // We'll have to experiment to see what's most effective.
         public double Priority
         {
-            get { return bound; }
+            get { return bound / (depth + 1); }
         }
 
         private double[,] matrix;
@@ -40,6 +44,7 @@ namespace TSP
         private int depth;
         // To be used to avoid premature cycles
         private HashSet<int> usedVertices;
+        private int pathsLeft;
 
         // Initial state, reduces matrix
         public State(City[] cities)
@@ -63,7 +68,9 @@ namespace TSP
             route = new ArrayList();
             usedVertices = new HashSet<int>();
 
-            currentState = this;
+            root = this;
+            queue.Enqueue(this, Priority);
+            pathsLeft = cityCount;
 
             reduceMatrix();
         }
@@ -82,6 +89,7 @@ namespace TSP
             if (include)
             {
                 bound += matrix[from, to];
+                pathsLeft = parent.pathsLeft - 1;
 
                 for (int i = 0; i < cityCount; i++)
                 {
@@ -95,13 +103,71 @@ namespace TSP
             }
 
             reduceMatrix();
+
+            // If there's more than one path left, delete paths to used vertices (Josh)
+            if (pathsLeft > 1)
+            {
+                for (int i = 0; i < usedVertices.Count; i++)
+                {
+                    matrix[from, i] = -1;
+                    // Shouldn't be necessary, but who knows?
+                    matrix[i, to] = -1;
+                }
+            }
+
+            // If not, set BSSF if necessary (Josh)
+            else if (pathsLeft == 1)
+            {
+                for (int i = 0; i < cityCount; i++)
+                {
+                    for (int j = 0; j < cityCount; j++)
+                    {
+                        if (matrix[i, j] >= 0)
+                        {
+                            includeChild = new State(this, true, i, j);
+                            if (includeChild.bound < BSSF.bound)
+                            {
+                                BSSF = includeChild;
+                                // Prune states starting with root
+                                root.prune();
+                            }
+                            else
+                            {
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Add to queue
+            if (pathsLeft > 0)
+            {
+                queue.Enqueue(this, Priority);
+            }
         }
 
         // Expands this state, prunes, and finds next state to expand (Probably both of us)
         // Make sure to prevent creating a cycle prematurely
         public void Expand()
         {
+            // If state is a solution return
+            if (pathsLeft == 0)
+            {
+                return;
+            }
 
+            // Create two children and update usedVertices (Brian)
+
+            // Find best state on queue and expand
+        }
+
+        // Finds initial BSSF (Brian)
+        // Call after setting cost matrix
+        public State findBSSF()
+        {
+            // TODO: fill this in
+            return this;
         }
 
         // Reduces cost matrix and updates bound (Josh)
@@ -156,9 +222,9 @@ namespace TSP
             }
         }
 
-        // Recursively prune this branch (Brian)
-        // Checks to see if it is better than BSSF
-        public void prune(double bssf)
+        // Recursively prunes this branch (Brian)
+        // Deletes descendents that don't make the cut
+        public void prune()
         {
 
         }
