@@ -24,3 +24,5 @@ C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\obj\Debug\TSP.csprojResolveAssembly
 C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\obj\Debug\TSP.Form1.resources
 C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\obj\Debug\TSP.Properties.Resources.resources
 C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\obj\Debug\TSP.csproj.GenerateResource.Cache
+C:\Users\Gemini Spark\Documents\GitHub\TSP\TSP\TSP\obj\Debug\TSP.exe
+C:\Users\Gemini Spark\Documents\GitHub\TSP\TSP\TSP\obj\Debug\TSP.pdb

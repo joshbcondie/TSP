@@ -16,6 +16,7 @@ namespace TSP
         private static int cityCount;
         public static State BSSF;
         public static Stopwatch Watch = new Stopwatch();
+        public static City[] cities;
 
 
         // Returns bound (only after reducing matrix)
@@ -51,6 +52,7 @@ namespace TSP
         // Initial state, reduces matrix
         public State(City[] cities)
         {
+            State.cities = cities;
             Watch.Start();
             cityCount = cities.Length;
             matrix = new double[cities.Length, cities.Length];
@@ -153,6 +155,13 @@ namespace TSP
             }
         }
 
+        // Constructor for initial BSSF
+        public State(ArrayList iroute, double bound)
+        {
+            this.route = new ArrayList(iroute);
+            this.bound = bound;
+        }
+
         // Expands this state, prunes, and finds next state to expand (Probably both of us)
         // Make sure to prevent creating a cycle prematurely
         public void Expand()
@@ -184,8 +193,15 @@ namespace TSP
         // So don't worry about the rest of the fields
         public State findBSSF()
         {
+            ArrayList bssfCities = new ArrayList();
+            double cost = 0;
             // TODO: fill this in
-            return this;
+            for (int i = 0; i < cityCount; i++)
+            {
+                bssfCities.Add(cities[(i + 1) % cityCount]);
+                cost += matrix[(i + 1) % cityCount, i];
+            }
+            return new State(bssfCities, cost);
         }
 
         // Reduces cost matrix and updates bound (Josh)
