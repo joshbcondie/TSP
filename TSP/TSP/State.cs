@@ -46,14 +46,14 @@ namespace TSP
         private double bound;
         private int depth;
         // To be used to avoid premature cycles
-        private HashSet<int> usedVertices;
+        private ArrayList visited;
         private int pathsLeft;
 
         // Initial state, reduces matrix
         public State(City[] cities)
         {
-            State.cities = cities;
             Watch.Start();
+            State.cities = cities;
             cityCount = cities.Length;
             matrix = new double[cities.Length, cities.Length];
             for (int i = 0; i < cities.Length; i++)
@@ -71,10 +71,11 @@ namespace TSP
             }
             bound = 0;
             route = new ArrayList();
-            usedVertices = new HashSet<int>();
+            visited = new ArrayList();
 
             root = this;
             pathsLeft = cityCount;
+            setInitialBSSF();
 
             reduceMatrix();
 
@@ -89,7 +90,7 @@ namespace TSP
         {
             matrix = (double[,])parent.matrix.Clone();
             route = new ArrayList(parent.route);
-            usedVertices = parent.usedVertices;
+            visited = new ArrayList(parent.visited);
             bound = parent.bound;
             this.parent = parent;
             depth = parent.depth + 1;
@@ -98,6 +99,8 @@ namespace TSP
             {
                 bound += matrix[from, to];
                 pathsLeft = parent.pathsLeft - 1;
+                visited.Add(from);
+                visited.Add(to);
 
                 for (int i = 0; i < cityCount; i++)
                 {
@@ -108,6 +111,7 @@ namespace TSP
             else
             {
                 matrix[from, to] = -1;
+                pathsLeft = parent.pathsLeft;
             }
 
             reduceMatrix();
@@ -115,11 +119,11 @@ namespace TSP
             // If there's more than one path left, delete paths to used vertices (Josh)
             if (pathsLeft > 1)
             {
-                for (int i = 0; i < usedVertices.Count; i++)
+                for (int i = 0; i < visited.Count; i++)
                 {
-                    matrix[from, i] = -1;
+                    matrix[to, (int)visited[i]] = -1;
                     // Shouldn't be necessary, but who knows?
-                    matrix[i, to] = -1;
+                    matrix[(int)visited[i], from] = -1;
                 }
             }
 
@@ -135,6 +139,7 @@ namespace TSP
                             includeChild = new State(this, true, i, j);
                             if (includeChild.bound < BSSF.bound)
                             {
+                                // Calculate route from visited nodes
                                 BSSF = includeChild;
                                 // Prune states starting with root
                                 root.prune();
@@ -173,16 +178,33 @@ namespace TSP
                 return;
             }
 
-            // Create two children and update usedVertices (Brian)
+            // Create two children and update usedVertices (Josh)
             if (pathsLeft > 0)
             {
-
+                for (int i = 0; i < cityCount; i++)
+                {
+                    int j = 0;
+                    for (j = 0; j < cityCount; j++)
+                    {
+                        if (matrix[i, j] >= 0)
+                        {
+                            includeChild = new State(this, true, i, j);
+                            excludeChild = new State(this, false, i, j);
+                            break;
+                        }
+                    }
+                    if (j < cityCount)
+                    {
+                        break;
+                    }
+                }
             }
 
             // Find best state on queue and expand
             State best = queue.Dequeue();
-            if (best == null || best.bound >= BSSF.bound || BSSF.bound == root.bound)
+            if (best == null || BSSF.bound == root.bound)
                 return;
+            best.Expand();
         }
 
         // Finds initial BSSF (Brian)
@@ -191,7 +213,7 @@ namespace TSP
         // Cost matrix of initial BSSF, doesn't matter
         // Only the route and bound matter
         // So don't worry about the rest of the fields
-        public State findBSSF()
+        public void setInitialBSSF()
         {
             ArrayList bssfCities = new ArrayList();
             double cost = 0;
@@ -201,7 +223,7 @@ namespace TSP
                 bssfCities.Add(cities[(i + 1) % cityCount]);
                 cost += matrix[(i + 1) % cityCount, i];
             }
-            return new State(bssfCities, cost);
+            BSSF = new State(bssfCities, cost);
         }
 
         // Reduces cost matrix and updates bound (Josh)

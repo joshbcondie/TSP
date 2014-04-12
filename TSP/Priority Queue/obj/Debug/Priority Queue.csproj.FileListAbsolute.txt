@@ -3,3 +3,8 @@ C:\Users\Joshua\Desktop\CS 312\IntelligentScissors\Priority Queue\bin\Debug\Prio
 C:\Users\Joshua\Desktop\CS 312\IntelligentScissors\Priority Queue\obj\Debug\Priority Queue.csprojResolveAssemblyReference.cache
 C:\Users\Joshua\Desktop\CS 312\IntelligentScissors\Priority Queue\obj\Debug\Priority Queue.dll
 C:\Users\Joshua\Desktop\CS 312\IntelligentScissors\Priority Queue\obj\Debug\Priority Queue.pdb
+C:\Users\Joshua\Documents\GitHub\TSP\TSP\Priority Queue\bin\Debug\Priority Queue.dll
+C:\Users\Joshua\Documents\GitHub\TSP\TSP\Priority Queue\bin\Debug\Priority Queue.pdb
+C:\Users\Joshua\Documents\GitHub\TSP\TSP\Priority Queue\obj\Debug\Priority Queue.csprojResolveAssemblyReference.cache
+C:\Users\Joshua\Documents\GitHub\TSP\TSP\Priority Queue\obj\Debug\Priority Queue.dll
+C:\Users\Joshua\Documents\GitHub\TSP\TSP\Priority Queue\obj\Debug\Priority Queue.pdb

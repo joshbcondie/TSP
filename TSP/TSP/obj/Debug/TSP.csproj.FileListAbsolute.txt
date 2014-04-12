@@ -26,3 +26,6 @@ C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\obj\Debug\TSP.Properties.Resources.
 C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\obj\Debug\TSP.csproj.GenerateResource.Cache
 C:\Users\Gemini Spark\Documents\GitHub\TSP\TSP\TSP\obj\Debug\TSP.exe
 C:\Users\Gemini Spark\Documents\GitHub\TSP\TSP\TSP\obj\Debug\TSP.pdb
+C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\bin\Debug\TSP.exe.config
+C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\bin\Debug\Priority Queue.dll
+C:\Users\Joshua\Documents\GitHub\TSP\TSP\TSP\bin\Debug\Priority Queue.pdb
