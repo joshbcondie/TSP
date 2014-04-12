@@ -10,7 +10,7 @@ namespace TSP
 {
     class State : PriorityQueueNode
     {
-        private static HeapPriorityQueue<State> queue = new HeapPriorityQueue<State>(2000000);
+        private static HeapPriorityQueue<State> queue = new HeapPriorityQueue<State>(2000);
         // Top state, used to start recursive pruning
         private static State root;
         private static int cityCount;
@@ -171,40 +171,42 @@ namespace TSP
         // Make sure to prevent creating a cycle prematurely
         public void Expand()
         {
-            // Check timeout
-            if (Watch.Elapsed.Seconds >= 59)
-            {
-                Watch.Stop();
-                return;
-            }
+            State current = this;
 
-            // Create two children and update usedVertices (Josh)
-            if (pathsLeft > 0)
+            while (current != null && BSSF.bound != root.bound)
             {
-                for (int i = 0; i < cityCount; i++)
+                // Check timeout
+                if (Watch.Elapsed.Seconds >= 59)
                 {
-                    int j = 0;
-                    for (j = 0; j < cityCount; j++)
+                    Watch.Stop();
+                    return;
+                }
+
+                // Create two children and update usedVertices (Josh)
+                if (current.pathsLeft > 0)
+                {
+                    for (int i = 0; i < cityCount; i++)
                     {
-                        if (matrix[i, j] >= 0)
+                        int j = 0;
+                        for (j = 0; j < cityCount; j++)
                         {
-                            includeChild = new State(this, true, i, j);
-                            excludeChild = new State(this, false, i, j);
+                            if (current.matrix[i, j] >= 0)
+                            {
+                                current.includeChild = new State(current, true, i, j);
+                                current.excludeChild = new State(current, false, i, j);
+                                break;
+                            }
+                        }
+                        if (j < cityCount)
+                        {
                             break;
                         }
                     }
-                    if (j < cityCount)
-                    {
-                        break;
-                    }
                 }
-            }
 
-            // Find best state on queue and expand
-            State best = queue.Dequeue();
-            if (best == null || BSSF.bound == root.bound)
-                return;
-            best.Expand();
+                // Find best state on queue and expand
+                current = queue.Dequeue();
+            }
         }
 
         // Finds initial BSSF (Brian)
