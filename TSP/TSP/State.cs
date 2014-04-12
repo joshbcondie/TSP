@@ -10,12 +10,12 @@ namespace TSP
 {
     class State : PriorityQueueNode
     {
-        private static HeapPriorityQueue<State> queue = new HeapPriorityQueue<State>(2000);
+        private static HeapPriorityQueue<State> queue;
         // Top state, used to start recursive pruning
         private static State root;
         private static int cityCount;
         public static State BSSF;
-        public static Stopwatch Watch = new Stopwatch();
+        public static Stopwatch Watch;
         public static City[] cities;
 
 
@@ -52,6 +52,10 @@ namespace TSP
         // Initial state, reduces matrix
         public State(City[] cities)
         {
+            queue = new HeapPriorityQueue<State>(10000);
+            root = this;
+            Watch = new Stopwatch();
+
             Watch.Start();
             State.cities = cities;
             cityCount = cities.Length;
@@ -73,7 +77,6 @@ namespace TSP
             route = new ArrayList();
             visited = new ArrayList();
 
-            root = this;
             pathsLeft = cityCount;
             setInitialBSSF();
 
@@ -140,6 +143,7 @@ namespace TSP
                             if (includeChild.bound < BSSF.bound)
                             {
                                 // Calculate route from visited nodes
+                                includeChild.calculateRoute();
                                 BSSF = includeChild;
                                 // Prune states starting with root
                                 root.prune();
@@ -154,9 +158,25 @@ namespace TSP
             }
 
             // Add to queue
-            if (pathsLeft > 0)
+            if (pathsLeft > 0 && bound < BSSF.bound)
             {
                 queue.Enqueue(this, Priority);
+            }
+        }
+
+        // Takes in visited cities and generates route
+        private void calculateRoute()
+        {
+            int city = 0;
+            for (int i = 0; i < cityCount; i++)
+            {
+                route.Add(cities[city]);
+                int index = visited.IndexOf(city);
+                if (index % 2 != 0)
+                {
+                    index = visited.IndexOf(city, index + 1);
+                }
+                city = (int)visited[index + 1];
             }
         }
 
@@ -190,7 +210,7 @@ namespace TSP
                         int j = 0;
                         for (j = 0; j < cityCount; j++)
                         {
-                            if (current.matrix[i, j] >= 0)
+                            if (current.matrix[i, j] == 0)
                             {
                                 current.includeChild = new State(current, true, i, j);
                                 current.excludeChild = new State(current, false, i, j);
@@ -284,7 +304,14 @@ namespace TSP
         // Deletes descendents that don't make the cut
         public void prune()
         {
-
+            if (bound > BSSF.bound)
+            {
+                //queue.Remove(this);
+            }
+            if (includeChild != null)
+                includeChild.prune();
+            if (excludeChild != null)
+                excludeChild.prune();
         }
     }
 }
