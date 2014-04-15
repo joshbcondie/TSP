@@ -42,7 +42,6 @@ namespace TSP
         private ArrayList route;
         private State includeChild;
         private State excludeChild;
-        private State parent;
         private double bound;
         private int depth;
         // To be used to avoid premature cycles
@@ -69,7 +68,7 @@ namespace TSP
                     // Set diagonals to infinity (negative)
                     if (i == j)
                     {
-                        matrix[i, j] = double.PositiveInfinity;
+                        matrix[i, j] = -1;
                     }
                 }
             }
@@ -95,86 +94,74 @@ namespace TSP
             route = new ArrayList(parent.route);
             visited = new ArrayList(parent.visited);
             bound = parent.bound;
-            this.parent = parent;
             depth = parent.depth + 1;
 
             if (include)
             {
                 bound += matrix[from, to];
+                for (int i = 0; i < cityCount; i++)
+                {
+                    matrix[from, i] = -1;
+                    matrix[i, to] = -1;
+                }
+                matrix[to, from] = -1;
                 pathsLeft = parent.pathsLeft - 1;
 
                 visited.Add(from);
                 visited.Add(to);
-
-                for (int i = 0; i < cityCount; i++)
-                {
-                    matrix[from, i] = double.PositiveInfinity;
-                    matrix[i, to] = double.PositiveInfinity;
-                }
-
-                // If there's more than one path left, delete paths to used vertices (Josh)
-                if (pathsLeft > 1)
-                {
-                    for (int i = 0; i < visited.Count; i++)
-                    {
-                        matrix[to, (int)visited[i]] = double.PositiveInfinity;
-                        // Shouldn't be necessary, but who knows?
-                        matrix[(int)visited[i], from] = double.PositiveInfinity;
-                    }
-                }
-                matrix[to, from] = -1;
             }
             else
             {
-                matrix[from, to] = double.PositiveInfinity;
+                matrix[from, to] = -1;
                 pathsLeft = parent.pathsLeft;
             }
 
             reduceMatrix();
 
-<<<<<<< HEAD
-            // set BSSF if necessary (Josh)
-=======
-
-
-            // If not, set BSSF if necessary (Josh)
->>>>>>> db946a5db292bc64738b61ae0dda50f4fb4ce022
-            if (pathsLeft == 1)
+            // Set BSSF if necessary (Josh)
+            if (pathsLeft == 0)
             {
-                for (int i = 0; i < cityCount; i++)
+                if (bound < BSSF.bound)
                 {
-                    for (int j = 0; j < cityCount; j++)
-                    {
-                        if (matrix[i, j] >= 0)
-                        {
-                            includeChild = new State(this, true, i, j);
-                            Console.WriteLine("Found solution");
-                            for (int k = 0; k < includeChild.visited.Count; k++)
-                            {
-                                Console.WriteLine(includeChild.visited[k]);
-                            }
-                            if (includeChild.bound < BSSF.bound)
-                            {
-                                // Calculate route from visited nodes
-                                includeChild.calculateRoute();
-                                BSSF = includeChild;
-                                // Prune states starting with root
-                                root.prune();
-                            }
-                            else
-                            {
-                                return;
-                            }
-                        }
-                    }
+                    calculateRoute();
+                    BSSF = this;
+                    root.prune();
                 }
             }
 
             // Add to queue
-            if (pathsLeft > 0 && bound < BSSF.bound)
+            else if (bound < BSSF.bound)
             {
                 queue.Enqueue(this, Priority);
             }
+        }
+
+        private Boolean isValidToAdd(int from, int to)
+        {
+            if (pathsLeft == 1)
+                return true;
+            Debug.Assert(visited.IndexOf(to) % 2 == 0 || visited.IndexOf(to) == -1, "Shouldn't be going there");
+            int next = to;
+            int index = 0;
+            while (true)
+            {
+                index = visited.IndexOf(next);
+                if (index < 0)
+                    return true;
+                if (index % 2 == 1)
+                {
+                    index = visited.IndexOf(next, index + 1);
+                    if (index < 0)
+                        return true;
+                }
+
+                if (index + 1 == visited.Count)
+                    return true;
+                next = (int)visited[index + 1];
+                if (next == from)
+                    return false;
+            }
+            return true;
         }
 
         // Takes in visited cities and generates route
@@ -215,15 +202,39 @@ namespace TSP
                     return;
                 }
 
+                if (current.bound >= BSSF.bound || current.pathsLeft == 0)
+                {
+                    current = queue.Dequeue();
+                    continue;
+                }
+
                 // Create two children and update usedVertices (Josh)
-                if (current.pathsLeft > 0)
+                for (int i = 0; i < cityCount; i++)
+                {
+                    int j = 0;
+                    for (j = 0; j < cityCount; j++)
+                    {
+                        if (current.matrix[i, j] == 0 && current.isValidToAdd(i, j))
+                        {
+                            current.includeChild = new State(current, true, i, j);
+                            current.excludeChild = new State(current, false, i, j);
+                            break;
+                        }
+                    }
+                    if (j < cityCount)
+                    {
+                        break;
+                    }
+                }
+
+                if (current.includeChild == null && current.excludeChild == null)
                 {
                     for (int i = 0; i < cityCount; i++)
                     {
                         int j = 0;
                         for (j = 0; j < cityCount; j++)
                         {
-                            if (current.matrix[i, j] == 0 && (current.visited.IndexOf(j) % 2 != 0 || current.pathsLeft <= 2))
+                            if (current.matrix[i, j] >= 0 && current.isValidToAdd(i, j))
                             {
                                 current.includeChild = new State(current, true, i, j);
                                 current.excludeChild = new State(current, false, i, j);
@@ -235,23 +246,9 @@ namespace TSP
                             break;
                         }
                     }
-
-                    if (current.includeChild == null && current.excludeChild == null)
-                    {
-                        for (int i = 0; i < cityCount; i++)
-                        {
-                            for (int j = 0; j < cityCount; j++)
-                            {
-                                if (current.matrix[i, j] >= 0 && (current.visited.IndexOf(j) % 2 != 0 || current.pathsLeft <= 2))
-                                {
-                                    current.includeChild = new State(current, true, i, j);
-                                    current.excludeChild = new State(current, false, i, j);
-                                    break;
-                                }
-                            }
-                        }
-                    }
                 }
+
+                Debug.Assert(current.includeChild != null && current.excludeChild != null, "Children not added");
 
                 // Find best state on queue and expand
                 current = queue.Dequeue();
@@ -285,30 +282,21 @@ namespace TSP
             // Checks for rows of infinity (negatives)
             for (int i = 0; i < cityCount; i++)
             {
-                int infinityCount = 0;
-                double min = double.PositiveInfinity;
+                double min = -1;
 
                 for (int j = 0; j < cityCount; j++)
                 {
-                    if (matrix[i, j] == double.PositiveInfinity )
-                    {
-                        infinityCount++;
-                    }
-
-                    else if (matrix[i,j] < min)
+                    if (min < 0 || (matrix[i, j] < min && matrix[i, j] >= 0))
                     {
                         min = matrix[i, j];
                     }
                 }
 
-                if (infinityCount < cityCount)
+                if (min > 0)
                 {
                     for (int j = 0; j < cityCount; j++)
                     {
-                        if (matrix[i, j] != double.PositiveInfinity && matrix[i, j] - min >= 0)
-                        {
-                            matrix[i, j] -= min;
-                        }
+                        matrix[i, j] -= min;
                     }
                     bound += min;
                 }
@@ -317,29 +305,21 @@ namespace TSP
             // Reduce columns
             for (int i = 0; i < cityCount; i++)
             {
-                int infinityCount = 0;
-                double min = double.PositiveInfinity;
+                double min = -1;
 
                 for (int j = 0; j < cityCount; j++)
                 {
-                    if (matrix[j, i] == double.PositiveInfinity)
-                    {
-                        infinityCount++;
-                    }
-                    else if (matrix[j, i] < min)
+                    if (min < 0 || (matrix[j, i] < min && matrix[j, i] >= 0))
                     {
                         min = matrix[j, i];
                     }
                 }
 
-                if (infinityCount < cityCount)
+                if (min > 0)
                 {
                     for (int j = 0; j < cityCount; j++)
                     {
-                        if (matrix[j, i] != double.PositiveInfinity && matrix[j, i] - min >= 0)
-                        {
-                            matrix[j, i] -= min;
-                        }
+                        matrix[j, i] -= min;
                     }
                     bound += min;
                 }
@@ -352,7 +332,14 @@ namespace TSP
         {
             if (bound > BSSF.bound)
             {
-                //queue.Remove(this);
+                try
+                {
+                    //queue.Remove(this);
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Problem removing from queue");
+                }
             }
             if (includeChild != null)
                 includeChild.prune();
