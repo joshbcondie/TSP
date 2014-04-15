@@ -102,6 +102,7 @@ namespace TSP
             {
                 bound += matrix[from, to];
                 pathsLeft = parent.pathsLeft - 1;
+
                 visited.Add(from);
                 visited.Add(to);
 
@@ -110,6 +111,7 @@ namespace TSP
                     matrix[from, i] = -1;
                     matrix[i, to] = -1;
                 }
+                matrix[to, from] = -1;
             }
             else
             {
@@ -119,19 +121,10 @@ namespace TSP
 
             reduceMatrix();
 
-            // If there's more than one path left, delete paths to used vertices (Josh)
-            if (pathsLeft > 1)
-            {
-                for (int i = 0; i < visited.Count; i++)
-                {
-                    matrix[to, (int)visited[i]] = -1;
-                    // Shouldn't be necessary, but who knows?
-                    matrix[(int)visited[i], from] = -1;
-                }
-            }
+
 
             // If not, set BSSF if necessary (Josh)
-            else if (pathsLeft == 1)
+            if (pathsLeft == 1)
             {
                 for (int i = 0; i < cityCount; i++)
                 {
@@ -140,6 +133,11 @@ namespace TSP
                         if (matrix[i, j] >= 0)
                         {
                             includeChild = new State(this, true, i, j);
+                            Console.WriteLine("Found solution");
+                            for (int k = 0; k < includeChild.visited.Count; k++)
+                            {
+                                Console.WriteLine(includeChild.visited[k]);
+                            }
                             if (includeChild.bound < BSSF.bound)
                             {
                                 // Calculate route from visited nodes
@@ -210,7 +208,7 @@ namespace TSP
                         int j = 0;
                         for (j = 0; j < cityCount; j++)
                         {
-                            if (current.matrix[i, j] == 0)
+                            if (current.matrix[i, j] == 0 && (current.visited.IndexOf(j) % 2 != 0 || current.pathsLeft <= 2))
                             {
                                 current.includeChild = new State(current, true, i, j);
                                 current.excludeChild = new State(current, false, i, j);
@@ -220,6 +218,22 @@ namespace TSP
                         if (j < cityCount)
                         {
                             break;
+                        }
+                    }
+
+                    if (current.includeChild == null && current.excludeChild == null)
+                    {
+                        for (int i = 0; i < cityCount; i++)
+                        {
+                            for (int j = 0; j < cityCount; j++)
+                            {
+                                if (current.matrix[i, j] >= 0 && (current.visited.IndexOf(j) % 2 != 0 || current.pathsLeft <= 2))
+                                {
+                                    current.includeChild = new State(current, true, i, j);
+                                    current.excludeChild = new State(current, false, i, j);
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
