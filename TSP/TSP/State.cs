@@ -69,7 +69,7 @@ namespace TSP
                     // Set diagonals to infinity (negative)
                     if (i == j)
                     {
-                        matrix[i, j] = -1;
+                        matrix[i, j] = double.PositiveInfinity;
                     }
                 }
             }
@@ -107,31 +107,31 @@ namespace TSP
 
                 for (int i = 0; i < cityCount; i++)
                 {
-                    matrix[from, i] = -1;
-                    matrix[i, to] = -1;
+                    matrix[from, i] = double.PositiveInfinity;
+                    matrix[i, to] = double.PositiveInfinity;
+                }
+
+                // If there's more than one path left, delete paths to used vertices (Josh)
+                if (pathsLeft > 1)
+                {
+                    for (int i = 0; i < visited.Count; i++)
+                    {
+                        matrix[to, (int)visited[i]] = double.PositiveInfinity;
+                        // Shouldn't be necessary, but who knows?
+                        matrix[(int)visited[i], from] = double.PositiveInfinity;
+                    }
                 }
             }
             else
             {
-                matrix[from, to] = -1;
+                matrix[from, to] = double.PositiveInfinity;
                 pathsLeft = parent.pathsLeft;
             }
 
             reduceMatrix();
 
-            // If there's more than one path left, delete paths to used vertices (Josh)
-            if (pathsLeft > 1)
-            {
-                for (int i = 0; i < visited.Count; i++)
-                {
-                    matrix[to, (int)visited[i]] = -1;
-                    // Shouldn't be necessary, but who knows?
-                    matrix[(int)visited[i], from] = -1;
-                }
-            }
-
-            // If not, set BSSF if necessary (Josh)
-            else if (pathsLeft == 1)
+            // set BSSF if necessary (Josh)
+            if (pathsLeft == 1)
             {
                 for (int i = 0; i < cityCount; i++)
                 {
@@ -256,21 +256,30 @@ namespace TSP
             // Checks for rows of infinity (negatives)
             for (int i = 0; i < cityCount; i++)
             {
-                double min = -1;
+                int infinityCount = 0;
+                double min = double.PositiveInfinity;
 
                 for (int j = 0; j < cityCount; j++)
                 {
-                    if (min < 0 || (matrix[i, j] < min && matrix[i, j] >= 0))
+                    if (matrix[i, j] == double.PositiveInfinity )
+                    {
+                        infinityCount++;
+                    }
+
+                    else if (matrix[i,j] < min)
                     {
                         min = matrix[i, j];
                     }
                 }
 
-                if (min > 0)
+                if (infinityCount < cityCount)
                 {
                     for (int j = 0; j < cityCount; j++)
                     {
-                        matrix[i, j] -= min;
+                        if (matrix[i, j] != double.PositiveInfinity && matrix[i, j] - min >= 0)
+                        {
+                            matrix[i, j] -= min;
+                        }
                     }
                     bound += min;
                 }
@@ -279,21 +288,29 @@ namespace TSP
             // Reduce columns
             for (int i = 0; i < cityCount; i++)
             {
-                double min = -1;
+                int infinityCount = 0;
+                double min = double.PositiveInfinity;
 
                 for (int j = 0; j < cityCount; j++)
                 {
-                    if (min < 0 || (matrix[j, i] < min && matrix[j, i] >= 0))
+                    if (matrix[j, i] == double.PositiveInfinity)
+                    {
+                        infinityCount++;
+                    }
+                    else if (matrix[j, i] < min)
                     {
                         min = matrix[j, i];
                     }
                 }
 
-                if (min > 0)
+                if (infinityCount < cityCount)
                 {
                     for (int j = 0; j < cityCount; j++)
                     {
-                        matrix[j, i] -= min;
+                        if (matrix[j, i] != double.PositiveInfinity && matrix[j, i] - min >= 0)
+                        {
+                            matrix[j, i] -= min;
+                        }
                     }
                     bound += min;
                 }
