@@ -46,6 +46,8 @@ namespace TSP
         private int depth;
         // To be used to avoid premature cycles
         private ArrayList visited;
+        // For debugging purposes
+        private ArrayList unvisited;
         private int pathsLeft;
 
         // Initial state, reduces matrix
@@ -75,6 +77,7 @@ namespace TSP
             bound = 0;
             route = new ArrayList();
             visited = new ArrayList();
+            unvisited = new ArrayList();
 
             pathsLeft = cityCount;
             setInitialBSSF();
@@ -93,6 +96,7 @@ namespace TSP
             matrix = (double[,])parent.matrix.Clone();
             route = new ArrayList(parent.route);
             visited = new ArrayList(parent.visited);
+            unvisited = new ArrayList(parent.unvisited);
             bound = parent.bound;
             depth = parent.depth + 1;
 
@@ -114,6 +118,9 @@ namespace TSP
             {
                 matrix[from, to] = -1;
                 pathsLeft = parent.pathsLeft;
+
+                unvisited.Add(from);
+                unvisited.Add(to);
             }
 
             reduceMatrix();
@@ -248,7 +255,7 @@ namespace TSP
                     }
                 }
 
-                Debug.Assert(current.includeChild != null && current.excludeChild != null, "Children not added");
+                //Debug.Assert(current.includeChild != null && current.excludeChild != null, "Children not added");
 
                 // Find best state on queue and expand
                 current = queue.Dequeue();
