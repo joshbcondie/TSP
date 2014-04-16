@@ -18,6 +18,7 @@ namespace TSP
         public static State BSSF;
         public static Stopwatch Watch;
         public static City[] cities;
+        public static int maxQueueSize;
 
 
         // Returns bound (only after reducing matrix)
@@ -55,6 +56,7 @@ namespace TSP
         // Initial state, reduces matrix
         public State(City[] cities)
         {
+            maxQueueSize = 0;
             queue = new PriorityQueue<State>();
             root = this;
             Watch = new Stopwatch();
@@ -108,9 +110,8 @@ namespace TSP
                 for (int i = 0; i < cityCount; i++)
                 {
                     // Check timeout
-                    if (Watch.Elapsed.Seconds >= 6)
+                    if (Watch.Elapsed.TotalSeconds >= 29)
                     {
-                        Watch.Stop();
                         return;
                     }
 
@@ -140,6 +141,8 @@ namespace TSP
                 if (bound < BSSF.bound)
                 {
                     calculateRoute();
+                    //Console.WriteLine("Old: " + BSSF.bound);
+                    //Console.WriteLine("New: " + bound);
                     BSSF = this;
                     root.prune();
                 }
@@ -149,6 +152,10 @@ namespace TSP
             else if (bound < BSSF.bound)
             {
                 queue.Enqueue(this);
+                if (queue.Count > maxQueueSize)
+                {
+                    maxQueueSize = queue.Count;
+                }
             }
         }
 
@@ -211,7 +218,7 @@ namespace TSP
             while (current != null && BSSF.bound != root.bound)
             {
                 // Check timeout
-                if (Watch.Elapsed.Seconds >= 10)
+                if (Watch.Elapsed.TotalSeconds >= 29)
                 {
                     Watch.Stop();
                     return;
@@ -306,7 +313,6 @@ namespace TSP
         // Reduces cost matrix and updates bound (Josh)
         public void reduceMatrix()
         {
-
             // Reduce rows
             // Checks for rows of infinity (negatives)
             for (int i = 0; i < cityCount; i++)
@@ -360,19 +366,42 @@ namespace TSP
         public void prune()
         {
             // Check timeout
-            if (Watch.Elapsed.Seconds >= 10)
+            if (Watch.Elapsed.TotalSeconds >= 29)
             {
-                Watch.Stop();
                 return;
             }
 
-            if (bound > BSSF.bound)
+            if (includeChild != null)
+            {
+                includeChild.prune();
+
+                if (includeChild.bound >= BSSF.bound)
+                {
+                    //queue.Remove(includeChild);
+                    //Console.WriteLine("After: " + queue.Count);
+                    includeChild = null;
+                }
+            }
+
+            if (excludeChild != null)
+            {
+                excludeChild.prune();
+
+                if (excludeChild.bound >= BSSF.bound)
+                {
+                    //queue.Remove(excludeChild);
+                    //Console.WriteLine("After: " + queue.Count);
+                    excludeChild = null;
+                }
+            }
+
+
+            // Older version
+            /*if (bound > BSSF.bound)
             {
                 try
                 {
-                    Console.WriteLine("Before: " + queue.Count);
-                    queue.Remove(this);
-                    Console.WriteLine("After: " + queue.Count);
+                    //queue.Remove(this);
                 }
                 catch (Exception)
                 {
@@ -382,7 +411,7 @@ namespace TSP
             if (includeChild != null)
                 includeChild.prune();
             if (excludeChild != null)
-                excludeChild.prune();
+                excludeChild.prune();*/
         }
 
         public int CompareTo(State state)

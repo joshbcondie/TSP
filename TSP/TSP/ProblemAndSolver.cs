@@ -246,9 +246,8 @@ namespace TSP
         {
             State state = new State(Cities);
             bssf = new TSPSolution(State.BSSF.Route);
-            Console.WriteLine(bssf.costOfRoute());
-            Console.WriteLine(State.BSSF.Bound);
-            //Debug.Assert(bssf.costOfRoute() == State.BSSF.Bound, "Not valid path");
+            Debug.Assert(bssf.costOfRoute() == State.BSSF.Bound, "Not valid path");
+            Console.WriteLine("Max Queue Size: " + State.maxQueueSize);
             Program.MainForm.tbCostOfTour.Text = " " + bssf.costOfRoute();
             Program.MainForm.tbElapsedTime.Text = State.Watch.Elapsed.ToString();
             Program.MainForm.Invalidate();
