@@ -3,14 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Priority_Queue;
+//using Priority_Queue;
 using System.Diagnostics;
+using OR_Bloggers.GeneralDatastructures;
 
 namespace TSP
 {
-    class State : PriorityQueueNode
+    class State : IComparable<State>
     {
-        private static HeapPriorityQueue<State> queue;
+        private static PriorityQueue<State> queue;
         // Top state, used to start recursive pruning
         private static State root;
         private static int cityCount;
@@ -35,7 +36,8 @@ namespace TSP
         // We'll have to experiment to see what's most effective.
         public double Priority
         {
-            get { return bound / (cityCount - pathsLeft + 1); }
+            //get { return bound / (cityCount - pathsLeft + 1); }
+            get { return 0.0 * bound + 1000 * pathsLeft / cityCount; }
         }
 
         private double[,] matrix;
@@ -53,7 +55,7 @@ namespace TSP
         // Initial state, reduces matrix
         public State(City[] cities)
         {
-            queue = new HeapPriorityQueue<State>(10000);
+            queue = new PriorityQueue<State>();
             root = this;
             Watch = new Stopwatch();
 
@@ -105,6 +107,13 @@ namespace TSP
                 bound += matrix[from, to];
                 for (int i = 0; i < cityCount; i++)
                 {
+                    // Check timeout
+                    if (Watch.Elapsed.Seconds >= 6)
+                    {
+                        Watch.Stop();
+                        return;
+                    }
+
                     matrix[from, i] = -1;
                     matrix[i, to] = -1;
                 }
@@ -139,7 +148,7 @@ namespace TSP
             // Add to queue
             else if (bound < BSSF.bound)
             {
-                queue.Enqueue(this, Priority);
+                queue.Enqueue(this);
             }
         }
 
@@ -168,7 +177,6 @@ namespace TSP
                 if (next == from)
                     return false;
             }
-            return true;
         }
 
         // Takes in visited cities and generates route
@@ -203,7 +211,7 @@ namespace TSP
             while (current != null && BSSF.bound != root.bound)
             {
                 // Check timeout
-                if (Watch.Elapsed.Seconds >= 59)
+                if (Watch.Elapsed.Seconds >= 10)
                 {
                     Watch.Stop();
                     return;
@@ -211,7 +219,14 @@ namespace TSP
 
                 if (current.bound >= BSSF.bound || current.pathsLeft == 0)
                 {
-                    current = queue.Dequeue();
+                    try
+                    {
+                        current = queue.Dequeue();
+                    }
+                    catch (Exception)
+                    {
+                        return;
+                    }
                     continue;
                 }
 
@@ -258,7 +273,14 @@ namespace TSP
                 //Debug.Assert(current.includeChild != null && current.excludeChild != null, "Children not added");
 
                 // Find best state on queue and expand
-                current = queue.Dequeue();
+                try
+                {
+                    current = queue.Dequeue();
+                }
+                catch (Exception)
+                {
+                    return;
+                }
             }
         }
 
@@ -337,11 +359,20 @@ namespace TSP
         // Deletes descendents that don't make the cut
         public void prune()
         {
+            // Check timeout
+            if (Watch.Elapsed.Seconds >= 10)
+            {
+                Watch.Stop();
+                return;
+            }
+
             if (bound > BSSF.bound)
             {
                 try
                 {
-                    //queue.Remove(this);
+                    Console.WriteLine("Before: " + queue.Count);
+                    queue.Remove(this);
+                    Console.WriteLine("After: " + queue.Count);
                 }
                 catch (Exception)
                 {
@@ -352,6 +383,15 @@ namespace TSP
                 includeChild.prune();
             if (excludeChild != null)
                 excludeChild.prune();
+        }
+
+        public int CompareTo(State state)
+        {
+            if (Priority.CompareTo(state.Priority) != 0)
+            {
+                return Priority.CompareTo(state.Priority);
+            }
+            return matrix.GetHashCode().CompareTo(state.matrix.GetHashCode());
         }
     }
 }
