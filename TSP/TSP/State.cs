@@ -113,7 +113,7 @@ namespace TSP
                 }
 
                 // If there's more than one path left, delete paths to used vertices (Josh)
-                if (pathsLeft > 1)
+                if (pathsLeft > 2)
                 {
                     for (int i = 0; i < visited.Count; i++)
                     {
@@ -122,7 +122,17 @@ namespace TSP
                         matrix[(int)visited[i], from] = double.PositiveInfinity;
                     }
                 }
-                matrix[to, from] = -1;
+                else if (pathsLeft == 2)
+                {
+                    //this should keep the path from the final city back to the first one
+                    for (int i = 1; i < visited.Count; i++)
+                    {
+                        matrix[to, (int)visited[i]] = double.PositiveInfinity;
+                        // Shouldn't be necessary, but who knows?
+                        matrix[(int)visited[i], from] = double.PositiveInfinity;
+                    }
+                }
+                matrix[to, from] = double.PositiveInfinity;
             }
             else
             {
@@ -132,20 +142,17 @@ namespace TSP
 
             reduceMatrix();
 
-<<<<<<< HEAD
             // set BSSF if necessary (Josh)
-=======
 
 
             // If not, set BSSF if necessary (Josh)
->>>>>>> db946a5db292bc64738b61ae0dda50f4fb4ce022
             if (pathsLeft == 1)
             {
                 for (int i = 0; i < cityCount; i++)
                 {
                     for (int j = 0; j < cityCount; j++)
                     {
-                        if (matrix[i, j] >= 0)
+                        if (matrix[i, j] != double.PositiveInfinity)
                         {
                             includeChild = new State(this, true, i, j);
                             Console.WriteLine("Found solution");
@@ -209,11 +216,11 @@ namespace TSP
             while (current != null && BSSF.bound != root.bound)
             {
                 // Check timeout
-                if (Watch.Elapsed.Seconds >= 59)
-                {
-                    Watch.Stop();
-                    return;
-                }
+                //if (Watch.Elapsed.Seconds >= 59)
+                //{
+                //    Watch.Stop();
+                //    return;
+                //}
 
                 // Create two children and update usedVertices (Josh)
                 if (current.pathsLeft > 0)
